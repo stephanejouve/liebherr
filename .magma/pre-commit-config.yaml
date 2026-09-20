@@ -1,0 +1,68 @@
+# Pre-commit hooks pour outillages.
+#
+# Installation locale (1 fois après clone) :
+#   poetry install
+#   poetry run pre-commit install
+#
+# Run manuel :
+#   poetry run pre-commit run --all-files
+#
+# Skip (urgence) :
+#   git commit --no-verify
+#
+# Versions alignées avec les dev deps pyproject.toml. Mêmes hooks que
+# magma-cycling / telephonIA pour cohérence cross-repos.
+
+repos:
+  - repo: https://github.com/psf/black
+    rev: 24.10.0
+    hooks:
+      - id: black
+        args: ['--line-length=100']
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.8.6
+    hooks:
+      - id: ruff
+        args: ['--fix', '--exit-non-zero-on-fix']
+
+  - repo: https://github.com/pycqa/isort
+    rev: 7.0.0
+    hooks:
+      - id: isort
+        args: ['--profile', 'black', '--line-length', '100']
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-toml
+      - id: check-added-large-files
+        args: ['--maxkb=1000']
+        # AppIcon.icns multi-tailles iconset (10 résolutions Apple standard)
+        # dépasse facilement 1 MB par nature. Asset binaire, à ne pas filtrer.
+        exclude: ^tools/local/.*/sources/.*\.icns$
+      - id: detect-private-key
+        # tests/test_talk_moderation.py contient des fixtures intentionnelles
+        # ressemblant à des clés (test du regex secret_pattern du moderation bot).
+        exclude: ^tests/test_talk_moderation\.py$
+      - id: check-case-conflict
+      - id: mixed-line-ending
+        args: ['--fix=lf']
+
+default_language_version:
+  python: python3.11
+
+exclude: |
+  (?x)^(
+      \.git/|
+      \.venv/|
+      __pycache__/|
+      \.pytest_cache/|
+      \.ruff_cache/|
+      build/|
+      dist/|
+      .*\.egg-info/
+  )$
