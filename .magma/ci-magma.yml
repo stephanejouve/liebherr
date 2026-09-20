@@ -1,0 +1,44 @@
+name: CI Magma
+
+# Workflow séparé de tout ci.yml upstream éventuel — préfixe magma pour éviter
+# collision et signaler explicitement l'overlay équipe magma.
+#
+# À déployer côté fork uniquement : cp .magma/ci-magma.yml .github/workflows/ci-magma.yml
+
+on:
+  push:
+    branches: [main, "feat/**", "fix/**"]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install poetry
+        run: pipx install poetry
+
+      - name: Activate magma overlay symlinks
+        run: |
+          ln -sf .magma/pre-commit-config.yaml .pre-commit-config.yaml
+          ln -sf .magma/pyproject.toml pyproject.toml
+
+      - name: Install dependencies
+        run: poetry install
+
+      - name: Run pre-commit
+        run: poetry run pre-commit run --all-files
+
+      - name: Run tests
+        run: poetry run pytest tests/ -v

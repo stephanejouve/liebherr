@@ -1,0 +1,19 @@
+# Magma overlay activation (local dev only — not shipped upstream)
+/.pre-commit-config.yaml
+/pyproject.toml
+/poetry.lock
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+htmlcov/
+.coverage
+*.egg-info/
+
+# Environment
+.venv/
+.env

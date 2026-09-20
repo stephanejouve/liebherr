@@ -60,14 +60,21 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
             # Geräte abrufen
             appliances = await api.get_appliances()
 
-            # Benachrichtigungen abrufen
-            # await api.fetch_notifications(config_entry)
-            filtered_notifications = []
+            # Benachrichtigungen abrufen — non-filtered pour que binary_sensor
+            # matche par deviceId côté entité (évite dépendance à config
+            # entry.options["devices_to_notify"] qui n'est pas exposée en UI).
+            try:
+                raw_notifications = await api.get_notifications()
+                if not isinstance(raw_notifications, list):
+                    raw_notifications = []
+            except Exception as notif_err:  # noqa: BLE001
+                _LOGGER.warning("Failed to fetch notifications: %s", notif_err)
+                raw_notifications = []
 
             # Kombinierte Daten zurückgeben
             combined_data = {
                 "appliances": appliances,
-                "notifications": filtered_notifications,
+                "notifications": raw_notifications,
             }
         except LiebherrUpdateException as e:
             raise LiebherrUpdateException(
@@ -98,7 +105,8 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
         _LOGGER.warning("No initial data retrieved from Liebherr API")
 
     await hass.config_entries.async_forward_entry_setups(
-        config_entry, ["climate", "switch", "select", "sensor", "cover"]
+        config_entry,
+        ["climate", "switch", "select", "sensor", "cover", "binary_sensor"],
     )
     return True
 
@@ -110,6 +118,7 @@ async def async_unload_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     await hass.config_entries.async_forward_entry_unload(config_entry, "select")
     await hass.config_entries.async_forward_entry_unload(config_entry, "sensor")
     await hass.config_entries.async_forward_entry_unload(config_entry, "cover")
+    await hass.config_entries.async_forward_entry_unload(config_entry, "binary_sensor")
     hass.data[DOMAIN].pop(config_entry.entry_id)
     return True
 
