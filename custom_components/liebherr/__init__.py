@@ -21,6 +21,7 @@ from homeassistant.util.dt import as_local, parse_datetime
 # from homeassistant.core import __all__
 from .const import (
     AIR_FILTER,
+    API_VERSION,
     BASE_API_URL,
     BASE_URL,
     DOMAIN,
@@ -227,7 +228,7 @@ class LiebherrAPI:
 
     async def get_notifications(self):
         """Retrieve notifications from the Liebherr API."""
-        url = f"{BASE_URL}/notifications"
+        url = f"{BASE_URL}{API_VERSION}/notifications"
         headers = {
             "api-key": self._key,
             "Content-Type": "application/json",
