@@ -384,7 +384,7 @@ class LiebherrAPI:
 
     async def acknowledge_notification(self, device_id, notification_id):
         """Acknowledge a notification."""
-        url = f"{BASE_API_URL}/notifications/{device_id}/{notification_id}"
+        url = f"{BASE_URL}{API_VERSION}/notifications/{device_id}/{notification_id}"
         headers = {
             "api-key": self._key,
             "Content-Type": "application/json",
